@@ -26,12 +26,24 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log("Player Health: " + Health);
     }
 
+
     void Die()
     {
         Debug.Log("Player has died.");
         IsDead = true;
+
+        Animator playerAnimator = GetComponentInChildren<Animator>();
+
+        if (playerAnimator != null)
+        {
+            playerAnimator.SetFloat("Speed", 0f);
+            playerAnimator.SetFloat("Horizontal", 0f);
+            playerAnimator.SetFloat("Vertical", 0f);
+        }
+
         PlayerMovement.enabled = false;
     }
+
     void Start()
     {
        

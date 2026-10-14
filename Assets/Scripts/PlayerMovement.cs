@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -6,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     float VerticalVelocity = 0f;
     bool IsRunning = false;
 
+    public PlayerHealth playerHealth;
 
     void Start()
     {
@@ -13,6 +15,11 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        if (playerHealth != null && playerHealth.IsPlayerDead())
+        {
+            return;
+        }
+
         float MovementSpeed = 5f;
         IsRunning = Input.GetKey(KeyCode.LeftShift);
 
@@ -24,13 +31,7 @@ public class PlayerMovement : MonoBehaviour
         float HorizontalInput = Input.GetAxis("Horizontal");
         float VerticalInput = Input.GetAxis("Vertical");
 
-
         CharacterController controller = GetComponent<CharacterController>();
-
-
-        Debug.Log("Grounded: " + controller.isGrounded +
-          " | Player Y: " + transform.position.y +
-          " | Vertical Velocity: " + VerticalVelocity);
 
         if (controller.isGrounded && VerticalVelocity < 0)
         {
@@ -47,16 +48,24 @@ public class PlayerMovement : MonoBehaviour
             animator.SetTrigger("Jump");
         }
 
-        Vector3 Movement = transform.right * HorizontalInput * MovementSpeed + VerticalVelocity * Vector3.up + transform.forward * VerticalInput * MovementSpeed;
-        float MovementAmount = Mathf.Clamp01(new Vector2(HorizontalInput, VerticalInput).magnitude);
-        float AnimationSpeed = IsRunning ? MovementAmount : MovementAmount * 0.5f;
+        Vector3 Movement =
+            transform.right * HorizontalInput * MovementSpeed
+            + VerticalVelocity * Vector3.up
+            + transform.forward * VerticalInput * MovementSpeed;
+
+        float MovementAmount = Mathf.Clamp01(
+            new Vector2(HorizontalInput, VerticalInput).magnitude
+        );
+
+        float AnimationSpeed = IsRunning
+            ? MovementAmount
+            : MovementAmount * 0.5f;
 
         animator.SetFloat("Speed", AnimationSpeed);
         animator.SetFloat("Horizontal", HorizontalInput);
         animator.SetFloat("Vertical", VerticalInput);
-      
+
         controller.Move(Movement * Time.deltaTime);
         animator.SetBool("Grounded", controller.isGrounded);
-
     }
 }
