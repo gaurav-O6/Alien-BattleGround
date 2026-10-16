@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class PlayerShooting : MonoBehaviour
@@ -9,7 +10,8 @@ public class PlayerShooting : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && !PlayerHealth.IsPlayerDead())
+        if (Input.GetMouseButtonDown(0) &&
+            !PlayerHealth.IsPlayerDead())
         {
             Shoot();
         }
@@ -21,23 +23,50 @@ public class PlayerShooting : MonoBehaviour
 
         Camera MainCamera = Camera.main;
 
-        Ray ShootRay = MainCamera.ViewportPointToRay (new Vector3 (0.5F, 0.5F, 0));
+        if (MainCamera == null)
+        {
+            Debug.LogError("PlayerShooting: No MainCamera found!");
+            return;
+        }
+
+        Vector3 rayOrigin = new Vector3(0.5f, 0.5f, 0f);
+        Ray ShootRay = MainCamera.ViewportPointToRay(rayOrigin);
 
         RaycastHit Hit;
-        if (Physics.Raycast(ShootRay,out Hit, ShootRange, ShootingMask))
+
+        if (Physics.Raycast(
+            ShootRay,
+            out Hit,
+            ShootRange,
+            ShootingMask))
         {
+            Debug.Log("Shot hit: " + Hit.collider.name);
+
+            EnemyHealth enemyHealth =
+                Hit.collider.GetComponentInParent<EnemyHealth>();
+
+            if (enemyHealth != null)
+            {
+                Debug.Log(
+                    "EnemyHealth found on: " +
+                    enemyHealth.gameObject.name
+                );
+
+                enemyHealth.TakeDamage(10);
+            }
+            else
+            {
+                Debug.LogWarning(
+                    "No EnemyHealth found on hit object or its parents: " +
+                    Hit.collider.name
+                );
+            }
+
             Target target = Hit.collider.GetComponent<Target>();
 
             if (target != null)
             {
                 target.Hit();
-            }
-            Debug.Log ("Shot hit: " + Hit.collider.name);
-
-            EnemyHealth enemyHealth = Hit.collider.GetComponentInParent<EnemyHealth>();
-            if (enemyHealth != null)
-            {
-                enemyHealth.TakeDamage(10); // Replace 10 with the actual damage value
             }
         }
         else

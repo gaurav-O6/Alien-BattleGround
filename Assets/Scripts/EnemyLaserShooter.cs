@@ -6,7 +6,7 @@ public class EnemyLaserShooter : MonoBehaviour
     public Transform LaserFirePoint;
     public float FireCooldown = 1.5f;
     public float LaserRange = 30f;
-    public int Damage = 10;
+    public int Damage = 1;
     public float BeamDuration = 0.12f;
     public float detectionRange = 15f;
 
@@ -30,8 +30,8 @@ public class EnemyLaserShooter : MonoBehaviour
         LaserBeam = beamObject.AddComponent<LineRenderer>();
 
         LaserBeam.material = new Material(Shader.Find("Sprites/Default"));
-        LaserBeam.startColor = Color.cyan;
-        LaserBeam.endColor = Color.blue;
+        LaserBeam.startColor = Color.red;
+        LaserBeam.endColor = Color.red;
         LaserBeam.startWidth = 0.04f;
         LaserBeam.endWidth = 0.015f;
         LaserBeam.positionCount = 2;
@@ -66,7 +66,15 @@ public class EnemyLaserShooter : MonoBehaviour
             return;
         }
 
-        if (Time.time >= NextFireTime)
+        Vector3 directionToPlayer = Player.position - transform.position;
+        directionToPlayer.y = 0f;
+
+        float facingAngle = Vector3.Angle(
+            transform.forward,
+            directionToPlayer
+        );
+
+        if (facingAngle <= 20f && Time.time >= NextFireTime)
         {
             ShootLaser();
             NextFireTime = Time.time + FireCooldown;

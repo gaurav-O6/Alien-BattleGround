@@ -4,21 +4,22 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] Animator animator;
-    float VerticalVelocity = 0f;
-    bool IsRunning = false;
+
+    private float VerticalVelocity = 0f;
+    private bool IsRunning = false;
 
     public PlayerHealth playerHealth;
 
-    void Start()
-    {
-    }
-
     void Update()
     {
-        if (playerHealth != null && playerHealth.IsPlayerDead())
+        CharacterController controller = GetComponent<CharacterController>();
+
+        if (controller == null)
         {
             return;
         }
+
+        bool IsDead = playerHealth != null && playerHealth.IsPlayerDead();
 
         float MovementSpeed = 5f;
         IsRunning = Input.GetKey(KeyCode.LeftShift);
@@ -31,9 +32,13 @@ public class PlayerMovement : MonoBehaviour
         float HorizontalInput = Input.GetAxis("Horizontal");
         float VerticalInput = Input.GetAxis("Vertical");
 
-        CharacterController controller = GetComponent<CharacterController>();
+        if (IsDead)
+        {
+            HorizontalInput = 0f;
+            VerticalInput = 0f;
+        }
 
-        if (controller.isGrounded && VerticalVelocity < 0)
+        if (controller.isGrounded && VerticalVelocity < 0f)
         {
             VerticalVelocity = -2f;
         }
@@ -42,10 +47,14 @@ public class PlayerMovement : MonoBehaviour
             VerticalVelocity += Physics.gravity.y * Time.deltaTime;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && controller.isGrounded)
+        if (!IsDead && Input.GetKeyDown(KeyCode.Space) && controller.isGrounded)
         {
             VerticalVelocity = 4f;
-            animator.SetTrigger("Jump");
+
+            if (animator != null)
+            {
+                animator.SetTrigger("Jump");
+            }
         }
 
         Vector3 Movement =
@@ -61,11 +70,19 @@ public class PlayerMovement : MonoBehaviour
             ? MovementAmount
             : MovementAmount * 0.5f;
 
-        animator.SetFloat("Speed", AnimationSpeed);
-        animator.SetFloat("Horizontal", HorizontalInput);
-        animator.SetFloat("Vertical", VerticalInput);
+        if (IsDead)
+        {
+            AnimationSpeed = 0f;
+        }
+
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", AnimationSpeed);
+            animator.SetFloat("Horizontal", HorizontalInput);
+            animator.SetFloat("Vertical", VerticalInput);
+            animator.SetBool("Grounded", controller.isGrounded);
+        }
 
         controller.Move(Movement * Time.deltaTime);
-        animator.SetBool("Grounded", controller.isGrounded);
     }
 }

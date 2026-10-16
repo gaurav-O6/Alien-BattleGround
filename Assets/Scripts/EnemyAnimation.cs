@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -12,15 +13,20 @@ public class EnemyAnimation : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    void Start()
-    {
-       
-    }
-    // Update is called once per frame
     void Update()
     {
-        animator.SetFloat("Speed", agent.velocity.magnitude);
-        Vector3 localVelocity = transform.InverseTransformDirection(agent.velocity);
+        if (agent == null || animator == null)
+        {
+            return;
+        }
+
+        // Use the alien's actual movement speed.
+        float movementSpeed = agent.velocity.magnitude;
+        animator.SetFloat("Speed", movementSpeed);
+
+        // Convert movement into the alien's local directions.
+        Vector3 localVelocity =
+            transform.InverseTransformDirection(agent.velocity);
 
         animator.SetFloat("Horizontal", localVelocity.x);
         animator.SetFloat("Vertical", localVelocity.z);
