@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 67649a220456cc14894abb84470b63fe
+guid: 1648a7ac4a1da2b47b747389838f3939
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Material _64
-    second: {fileID: 2100000, guid: 81b6384d8219974489f1451b6242b083, type: 2}
+      name: SFpistol
+    second: {fileID: 2100000, guid: d5bd63d4821eec64b8ccd6ff2c38a32e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
