@@ -8,6 +8,13 @@ public class PlayerHealth : MonoBehaviour
 
     public PlayerMovement PlayerMovement;
 
+    private Animator PlayerAnimator;
+
+    private void Awake()
+    {
+        PlayerAnimator = GetComponentInChildren<Animator>();
+    }
+
     public bool IsPlayerDead()
     {
         return IsDead;
@@ -32,18 +39,32 @@ public class PlayerHealth : MonoBehaviour
         Debug.Log("Player Health: " + Health);
     }
 
-    void Die()
+    private void Die()
     {
-        Debug.Log("Player has died.");
         IsDead = true;
 
-        Animator playerAnimator = GetComponentInChildren<Animator>();
+        Debug.Log("Player has died.");
 
-        if (playerAnimator != null)
+        if (PlayerMovement != null)
         {
-            playerAnimator.SetFloat("Speed", 0f);
-            playerAnimator.SetFloat("Horizontal", 0f);
-            playerAnimator.SetFloat("Vertical", 0f);
+            PlayerMovement.enabled = false;
+        }
+
+        if (PlayerAnimator != null)
+        {
+            PlayerAnimator.SetFloat("Speed", 0f);
+            PlayerAnimator.SetFloat("Horizontal", 0f);
+            PlayerAnimator.SetFloat("Vertical", 0f);
+
+            PlayerAnimator.ResetTrigger("Die");
+            PlayerAnimator.SetTrigger("Die");
+        }
+        else
+        {
+            Debug.LogError(
+                "PlayerHealth: No Animator found in the player hierarchy!",
+                this
+            );
         }
     }
 }

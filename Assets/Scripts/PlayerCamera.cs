@@ -30,6 +30,12 @@ public class PlayerCamera : MonoBehaviour
         float MouseX = Input.GetAxis("Mouse X");
         float MouseY = Input.GetAxis("Mouse Y");
 
+        if (GetComponent<PlayerHealth>() != null &&
+            GetComponent<PlayerHealth>().IsPlayerDead())
+        {
+            return;
+        }
+
         CameraKick = Mathf.MoveTowards(CameraKick, 0f, CameraKickReturnSpeed * Time.deltaTime);
 
         VerticalRotation -= MouseY * MouseSensitivity;
