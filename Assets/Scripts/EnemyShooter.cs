@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class EnemyShooter : MonoBehaviour
@@ -18,7 +17,10 @@ public class EnemyShooter : MonoBehaviour
     public int Damage = 10;
     public PlayerHealth playerHealth;
 
-    [Header("Legacy Weapon Effects")]
+    [Header("Enemy Health")]
+    public EnemyHealth enemyHealth;
+
+    [Header("Weapon Effects")]
     public ParticleSystem EnemyMuzzleFlash;
     public AudioSource EnemyAudio;
 
@@ -27,6 +29,10 @@ public class EnemyShooter : MonoBehaviour
 
     void Update()
     {
+        // Stop all shooting logic as soon as this enemy starts dying.
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
         if (player == null || playerHealth == null)
             return;
 
@@ -81,6 +87,10 @@ public class EnemyShooter : MonoBehaviour
 
     void Shoot()
     {
+        // Extra safety check in case Shoot() is called after death.
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
         if (EnemyGun == null)
         {
             Debug.LogWarning(
@@ -92,7 +102,18 @@ public class EnemyShooter : MonoBehaviour
 
         Debug.Log("Enemy Fired");
 
-        EnemyGun.Fire(Damage, transform);
+        Vector3 targetPosition = player.position + Vector3.up * 1.2f;
+
+        EnemyGun.Fire(Damage, transform, targetPosition);
+
+        if (EnemyMuzzleFlash != null)
+        {
+            EnemyMuzzleFlash.Stop(
+                true,
+                ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            EnemyMuzzleFlash.Play();
+        }
 
         NextFireTime = Time.time + FireCooldown;
     }

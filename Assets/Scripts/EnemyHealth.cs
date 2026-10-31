@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.VFX;
 
 public class EnemyHealth : MonoBehaviour
 {
@@ -14,11 +13,12 @@ public class EnemyHealth : MonoBehaviour
     public Animator AlienAnimator;
     public float DeathAnimationDuration = 3f;
 
-    [Header("Disintegration Effect")]
-    public VisualEffect DisintegrationEffectPrefab;
-    public float DisintegrationEffectLifetime = 3f;
+    [Header("Dissolve Effect")]
+    public EnemyDissolve EnemyDissolve;
+    public float DissolveStartDelay = 1.5f;
 
     private bool isDead = false;
+    public bool IsDead => isDead;
 
     public void TakeDamage(int damage)
     {
@@ -53,7 +53,6 @@ public class EnemyHealth : MonoBehaviour
                 "EnemyHealth: ScoreManager is not assigned.", this);
         }
 
-        // Play the existing death animation.
         if (AlienAnimator != null)
         {
             AlienAnimator.SetTrigger("Die");
@@ -64,32 +63,28 @@ public class EnemyHealth : MonoBehaviour
                 "EnemyHealth: AlienAnimator is not assigned.", this);
         }
 
-        // Spawn the new Visual Effect Graph.
-        if (DisintegrationEffectPrefab != null)
+        StartCoroutine(DeathSequence());
+    }
+
+    private IEnumerator DeathSequence()
+    {
+        yield return new WaitForSeconds(DissolveStartDelay);
+
+        if (EnemyDissolve != null)
         {
-            VisualEffect effect = Instantiate(
-                DisintegrationEffectPrefab,
-                transform.position,
-                Quaternion.identity
-            );
-
-            effect.Play();
-
-            Destroy(effect.gameObject, DisintegrationEffectLifetime);
+            EnemyDissolve.StartDissolve();
         }
         else
         {
             Debug.LogWarning(
-                "EnemyHealth: Disintegration Effect is not assigned.",
-                this);
+                "EnemyHealth: EnemyDissolve is not assigned.", this);
         }
 
-        StartCoroutine(DeactivateAfterDeath());
-    }
+        float remainingTime =
+            Mathf.Max(0f, DeathAnimationDuration - DissolveStartDelay);
 
-    private IEnumerator DeactivateAfterDeath()
-    {
-        yield return new WaitForSeconds(DeathAnimationDuration);
+        yield return new WaitForSeconds(remainingTime);
+
         gameObject.SetActive(false);
     }
 }

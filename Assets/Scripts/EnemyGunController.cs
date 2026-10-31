@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class EnemyGunController : MonoBehaviour
@@ -16,7 +15,7 @@ public class EnemyGunController : MonoBehaviour
     public ParticleSystem MuzzleFlash;
 
     [Header("Slide Recoil")]
-    public float RecoilDistance = 0.01f;
+    public float RecoilDistance = 0.04f;
     public float RecoilRecoverySpeed = 0.1f;
 
     private Vector3 DefaultSlidePosition;
@@ -68,6 +67,14 @@ public class EnemyGunController : MonoBehaviour
 
     public void Fire(int damage, Transform owner)
     {
+        if (FirePoint == null)
+            return;
+
+        Fire(damage, owner, FirePoint.position + FirePoint.forward * 10f);
+    }
+
+    public void Fire(int damage, Transform owner, Vector3 targetPosition)
+    {
         if (!enabled || FirePoint == null || EnergyBoltPrefab == null)
             return;
 
@@ -79,6 +86,12 @@ public class EnemyGunController : MonoBehaviour
         if (MuzzleFlash != null)
             MuzzleFlash.Play();
 
+        Vector3 firingDirection =
+            targetPosition - FirePoint.position;
+
+        if (firingDirection.sqrMagnitude < 0.001f)
+            return;
+
         EnergyBolt projectile = Instantiate(
             EnergyBoltPrefab,
             FirePoint.position,
@@ -87,6 +100,6 @@ public class EnemyGunController : MonoBehaviour
 
         projectile.Speed = ProjectileSpeed;
         projectile.Damage = damage;
-        projectile.Initialize(FirePoint.forward, owner);
+        projectile.Initialize(firingDirection, owner);
     }
 }
