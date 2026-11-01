@@ -1,4 +1,4 @@
-
+using System.Collections;
 using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
@@ -9,10 +9,12 @@ public class PlayerHealth : MonoBehaviour
     public PlayerMovement PlayerMovement;
 
     private Animator PlayerAnimator;
+    private CharacterController Controller;
 
     private void Awake()
     {
         PlayerAnimator = GetComponentInChildren<Animator>();
+        Controller = GetComponent<CharacterController>();
     }
 
     public bool IsPlayerDead()
@@ -22,7 +24,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (IsDead)
+        if (IsDead || damage <= 0)
         {
             return;
         }
@@ -45,9 +47,24 @@ public class PlayerHealth : MonoBehaviour
 
         Debug.Log("Player has died.");
 
-        if (PlayerMovement != null)
+        StartCoroutine(PlayDeathAnimationAfterLanding());
+    }
+
+    private IEnumerator PlayDeathAnimationAfterLanding()
+    {
+        if (Controller != null)
         {
-            PlayerMovement.enabled = false;
+            while (!Controller.isGrounded)
+            {
+                yield return null;
+            }
+        }
+        else
+        {
+            Debug.LogWarning(
+                "PlayerHealth: CharacterController not found. Playing death animation immediately.",
+                this
+            );
         }
 
         if (PlayerAnimator != null)
