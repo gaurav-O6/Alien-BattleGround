@@ -8,6 +8,9 @@ public class PlayerShooting : MonoBehaviour
     public GunController Gun;
     public PlayerHealth PlayerHealth;
 
+    [Header("Damage")]
+    public int Damage = 500;
+
     void Update()
     {
         if (Input.GetMouseButtonDown(0) &&
@@ -20,6 +23,7 @@ public class PlayerShooting : MonoBehaviour
     void Shoot()
     {
         Gun.Fire();
+        GunshotAlert.ReportShot(transform.position);
 
         Camera MainCamera = Camera.main;
 
@@ -47,19 +51,7 @@ public class PlayerShooting : MonoBehaviour
 
             if (enemyHealth != null)
             {
-                Debug.Log(
-                    "EnemyHealth found on: " +
-                    enemyHealth.gameObject.name
-                );
-
-                enemyHealth.TakeDamage(10);
-            }
-            else
-            {
-                Debug.LogWarning(
-                    "No EnemyHealth found on hit object or its parents: " +
-                    Hit.collider.name
-                );
+                enemyHealth.TakeDamage(Damage);
             }
 
             Target target = Hit.collider.GetComponent<Target>();

@@ -24,93 +24,133 @@ public class EnemyShooter : MonoBehaviour
     public ParticleSystem EnemyMuzzleFlash;
     public AudioSource EnemyAudio;
 
-    private float NextFireTime = 0f;
-    private bool PlayerDetected = false;
+    private float NextFireTime;
+    private bool PlayerDetected;
 
-    void Update()
+    private void Update()
     {
-        // Stop all shooting logic as soon as this enemy starts dying.
         if (enemyHealth != null && enemyHealth.IsDead)
             return;
 
-        if (player == null || playerHealth == null)
+        if (player == null || playerHealth == null || EnemyGun == null)
             return;
 
-        float DistanceToPlayer =
+        float distanceToPlayer =
             Vector3.Distance(transform.position, player.position);
 
-        bool CurrentlyDetected =
-            DistanceToPlayer <= detectionRange;
+        bool currentlyDetected = distanceToPlayer <= detectionRange;
 
-        if (CurrentlyDetected && !PlayerDetected)
+        if (currentlyDetected && !PlayerDetected)
             Debug.Log("Player Detected");
 
-        if (!CurrentlyDetected && PlayerDetected)
+        if (!currentlyDetected && PlayerDetected)
             Debug.Log("Player Lost");
 
-        if (CurrentlyDetected)
+        if (currentlyDetected)
         {
-            Vector3 DirectionToPlayer =
-                player.position - transform.position;
+            Vector3 eyePosition =
+                transform.position + Vector3.up * 1.2f;
 
-            DirectionToPlayer.y = 0f;
+            Vector3 targetPosition =
+                player.position + Vector3.up * 1.2f;
 
-            RaycastHit Hit;
+            Vector3 directionToPlayer =
+                targetPosition - eyePosition;
 
-            bool CanSeePlayer = !Physics.Raycast(
-                transform.position,
-                DirectionToPlayer.normalized,
-                out Hit,
-                DistanceToPlayer,
-                VisionMask);
+            float rayDistance = directionToPlayer.magnitude;
 
-            if (DirectionToPlayer != Vector3.zero && CanSeePlayer)
+            bool canSeePlayer = false;
+
+            if (rayDistance > 0.001f)
             {
-                Quaternion TargetRotation =
-                    Quaternion.LookRotation(DirectionToPlayer);
+                canSeePlayer = Physics.Raycast(
+                    eyePosition,
+                    directionToPlayer.normalized,
+                    out RaycastHit hit,
+                    rayDistance,
+                    VisionMask,
+                    QueryTriggerInteraction.Ignore
+                ) && (
+                    hit.transform == player ||
+                    hit.transform.IsChildOf(player)
+                );
+            }
 
-                transform.rotation = Quaternion.Slerp(
-                    transform.rotation,
-                    TargetRotation,
-                    rotationSpeed * Time.deltaTime);
+            if (canSeePlayer)
+            {
+                Vector3 flatDirection = player.position - transform.position;
+                flatDirection.y = 0f;
+
+                if (flatDirection.sqrMagnitude > 0.001f)
+                {
+                    Quaternion targetRotation =
+                        Quaternion.LookRotation(flatDirection);
+
+                    transform.rotation = Quaternion.Slerp(
+                        transform.rotation,
+                        targetRotation,
+                        rotationSpeed * Time.deltaTime
+                    );
+                }
 
                 if (Time.time >= NextFireTime &&
                     !playerHealth.IsPlayerDead())
                 {
-                    Shoot();
+                    TryShoot();
                 }
             }
         }
 
-        PlayerDetected = CurrentlyDetected;
+        PlayerDetected = currentlyDetected;
     }
 
-    void Shoot()
+    private void TryShoot()
     {
-        // Extra safety check in case Shoot() is called after death.
         if (enemyHealth != null && enemyHealth.IsDead)
             return;
 
-        if (EnemyGun == null)
+        Transform muzzle = FirePoint != null
+            ? FirePoint
+            : EnemyGun.FirePoint;
+
+        if (muzzle == null)
         {
             Debug.LogWarning(
-                "EnemyShooter: EnemyGun is not assigned!",
+                "EnemyShooter: No FirePoint assigned!",
                 this);
 
             return;
         }
 
+        Shoot(muzzle);
+    }
+
+    private void Shoot(Transform muzzle)
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
+        if (player == null)
+            return;
+
         Debug.Log("Enemy Fired");
 
-        Vector3 targetPosition = player.position + Vector3.up * 1.2f;
+        // Aim toward the player's current position, including height.
+        Vector3 projectileTarget =
+            player.position + Vector3.up * 1.2f;
 
-        EnemyGun.Fire(Damage, transform, targetPosition);
+        EnemyGun.Fire(
+            Damage,
+            transform,
+            projectileTarget
+        );
 
         if (EnemyMuzzleFlash != null)
         {
             EnemyMuzzleFlash.Stop(
                 true,
-                ParticleSystemStopBehavior.StopEmittingAndClear);
+                ParticleSystemStopBehavior.StopEmittingAndClear
+            );
 
             EnemyMuzzleFlash.Play();
         }

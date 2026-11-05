@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 
@@ -16,6 +17,9 @@ public class EnemyHealth : MonoBehaviour
     [Header("Dissolve Effect")]
     public EnemyDissolve EnemyDissolve;
     public float DissolveStartDelay = 1.5f;
+
+    [Header("Spawner")]
+    public EnemySpawner Spawner;
 
     private bool isDead = false;
     public bool IsDead => isDead;
@@ -84,6 +88,11 @@ public class EnemyHealth : MonoBehaviour
             Mathf.Max(0f, DeathAnimationDuration - DissolveStartDelay);
 
         yield return new WaitForSeconds(remainingTime);
+
+        if (Spawner != null)
+        {
+            Spawner.EnemyDied();
+        }
 
         gameObject.SetActive(false);
     }

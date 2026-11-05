@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4192502863874978142}
   - component: {fileID: 6359536486181039938}
   - component: {fileID: -1825610222267159234}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: EnergyBolt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -110,7 +110,7 @@ GameObject:
   - component: {fileID: 4210259610803727236}
   - component: {fileID: 2928515098956559503}
   - component: {fileID: 2617561105731896240}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BoltVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
